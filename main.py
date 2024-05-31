@@ -63,7 +63,7 @@ class SensorNetworkGUI:
         for i in range(num_sensors):
             x = random.randint(0, self.width)
             y = random.randint(0, self.height)
-            sensor = Sensor(x, y, _range=100, _id=i, initial_battery=100)
+            sensor = Sensor(x, y, _range=100, _id=i, initial_battery=random.randint(20,100))
             self.region.add_sensor(sensor)
             self.draw_sensor(sensor)
 
@@ -78,18 +78,31 @@ class SensorNetworkGUI:
         print(self.region)
 
     def draw_sensor(self, sensor):
+        if sensor.canv_id is not None:
+            self.canvas.delete(sensor.canv_id)
+
         if sensor.is_active and sensor.lifetime > 0:
-            color = 'green'
-        elif (sensor.is_active or not sensor.is_active) and sensor.lifetime <= 0:
-            color = 'black'
+            fill_color = 'green'  # Aktywny
+            outline_color = 'darkgreen'
+            sensor.canv_id = self.canvas.create_oval(
+                sensor.x - sensor.range, sensor.y - sensor.range,
+                sensor.x + sensor.range, sensor.y + sensor.range,
+                outline=outline_color, width=1.2
+            )
         else:
-            color = 'red'
-        self.canvas.create_oval(sensor.x - 5, sensor.y - 5, sensor.x + 5, sensor.y + 5, fill=color)
-        self.canvas.create_oval(sensor.x - sensor.range, sensor.y - sensor.range,
-                                sensor.x + sensor.range, sensor.y + sensor.range, outline=color)
+            fill_color, outline_color = ('gray', 'black') if sensor.lifetime <= 0 else ('red', 'darkred')
+            sensor.canv_id = None  # Usuń referencję, ponieważ sensor jest nieaktywny
+
+            # Rysowanie samego sensora
+        self.canvas.create_oval(
+            sensor.x - 5, sensor.y - 5, sensor.x + 5, sensor.y + 5,
+            fill=fill_color, outline=outline_color, width=1.5
+        )
 
     def draw_target(self, target):
-        self.canvas.create_rectangle(target.x - 4, target.y - 4, target.x + 4, target.y + 4, fill='blue')
+        self.canvas.create_rectangle(
+            target.x - 4, target.y - 4, target.x + 4, target.y + 4,
+            fill='blue', outline='navy', width=1.5)
 
 
     def optimize_network(self):
