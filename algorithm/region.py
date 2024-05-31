@@ -1,3 +1,5 @@
+from .simulated_annealing import optimize_sensors
+
 class Region:
     def __init__(self, width, height):
         self.width = width
@@ -15,6 +17,11 @@ class Region:
         for sensor in self.sensors:
             for target in self.targets:
                 sensor.monitor_target(target)
+
+    def optimize_network(self):
+        best_solution, best_coverage = optimize_sensors(self)
+        return best_solution, best_coverage
+
 
     def __repr__(self):
         return f'Region(width={self.width}, height={self.height}, sensors={len(self.sensors)}, targets={len(self.targets)})'
