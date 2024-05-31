@@ -7,7 +7,7 @@ class Sensor:
         self.targets_in_range = []
         self.initial_battery = initial_battery
         self.lifetime = initial_battery
-        self.is_active = True
+        self.is_active = False
 
     def is_within_range(self, target):
         distance = ((self.x - target.x) ** 2 + (self.y - target.y) ** 2) ** 0.5
