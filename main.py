@@ -5,7 +5,9 @@ import time
 from algorithm.sensor import Sensor
 from algorithm.target import Target
 from algorithm.region import Region
+from algorithm.simulation_data import Simulation_data
 
+import matplotlib.pyplot as plt
 
 class SensorNetworkGUI:
     def __init__(self, root, width=800, height=800):
@@ -17,6 +19,7 @@ class SensorNetworkGUI:
         self.canvas.pack(side=tk.LEFT)
         self.add_widgets()
         self.time_lived = 0
+        self.simulation_data = Simulation_data()
 
     def add_widgets(self):
         control_frame = tk.Frame(self.root)
@@ -57,8 +60,8 @@ class SensorNetworkGUI:
     def generate_network(self):
         self.canvas.delete("all")
         self.region = Region(self.width, self.height)
-        num_sensors = 45
-        num_targets = 15
+        num_sensors = 200
+        num_targets = 40
 
         for i in range(num_sensors):
             x = random.randint(0, self.width)
@@ -91,7 +94,7 @@ class SensorNetworkGUI:
             )
         else:
             fill_color, outline_color = ('gray', 'black') if sensor.lifetime <= 0 else ('red', 'darkred')
-            sensor.canv_id = None  # Usuń referencję, ponieważ sensor jest nieaktywny
+            sensor.canv_id = None
 
             # Rysowanie samego sensora
         self.canvas.create_oval(
@@ -114,23 +117,29 @@ class SensorNetworkGUI:
         for sensor in self.region.sensors:
             self.draw_sensor(sensor)
         self.root.update()
+        return best_coverage
 
     def simulate_sensor_lifetimes(self, step_duration=10):
         total_time = 0
-        time.sleep(3)
+        time.sleep(1)
         active_sensors = [sensor for sensor in self.region.sensors if sensor.is_active and sensor.lifetime > 0]
         total_active = len(active_sensors)
+        self.simulation_data.time_steps.append(total_time)
+        self.simulation_data.active_sensors.append(total_active)
         while True:
             active_sensors = [sensor for sensor in self.region.sensors if sensor.is_active and sensor.lifetime > 0]
             if len(active_sensors) < total_active:
                 print("\nnetwork re-optimization: ")
-                self.optimize_network()
+                best_coverage = self.optimize_network()
                 for sensor in self.region.sensors:
                     self.draw_sensor(sensor)
                 self.root.update()
-                time.sleep(3)
+                time.sleep(1)
                 active_sensors = [sensor for sensor in self.region.sensors if sensor.is_active and sensor.lifetime > 0]
                 total_active = len(active_sensors)
+                self.simulation_data.time_steps.append(total_time)
+                self.simulation_data.active_sensors.append(total_active)
+                self.simulation_data.coverage.append(best_coverage)
             if not active_sensors:
                 break
 
@@ -140,14 +149,33 @@ class SensorNetworkGUI:
             total_time += 1
         return total_time
 
+    def creating_charts(self):
+        plt.figure(figsize=(10, 5))
+        plt.plot(self.simulation_data.time_steps, self.simulation_data.active_sensors, label='Active Sensors')
+        plt.xlabel('Time Steps')
+        plt.ylabel('Number of Active Sensors')
+        plt.title('Active Sensors Over Time')
+        plt.legend()
+        plt.show()
+
+        plt.figure(figsize=(10, 5))
+        plt.plot(self.simulation_data.time_steps, self.simulation_data.coverage, label='Coverage %', color='green')
+        plt.xlabel('Time Steps')
+        plt.ylabel('Coverage Percentage')
+        plt.title('Target Coverage Over Time')
+        plt.legend()
+        plt.show()
+
     def simulate_network(self):
         print("\nstart the simulation:")
-        self.optimize_network()
+        best_coverage = self.optimize_network()
+        self.simulation_data.coverage.append(best_coverage)
         simulation_results = self.simulate_sensor_lifetimes()
         self.time_lived += simulation_results
         print(f'Total Time: {self.time_lived} seconds')
         for sensor in self.region.sensors:
             self.draw_sensor(sensor)
+        self.creating_charts()
 
 if __name__ == '__main__':
     root = tk.Tk()
