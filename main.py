@@ -25,6 +25,14 @@ class SensorNetworkGUI:
         control_frame = tk.Frame(self.root)
         control_frame.pack(side=tk.RIGHT, fill=tk.Y)
 
+        tk.Label(control_frame, text="Number of Sensors:").pack()
+        self.sensor_entry = tk.Entry(control_frame)
+        self.sensor_entry.pack()
+
+        tk.Label(control_frame, text="Number of Targets:").pack()
+        self.target_entry = tk.Entry(control_frame)
+        self.target_entry.pack()
+
         self.generate_button = tk.Button(control_frame, text='Generate Network', command=self.generate_network)
         self.generate_button.pack()
 
@@ -60,8 +68,13 @@ class SensorNetworkGUI:
     def generate_network(self):
         self.canvas.delete("all")
         self.region = Region(self.width, self.height)
-        num_sensors = 200
-        num_targets = 40
+
+        try:
+            num_sensors = int(self.sensor_entry.get())
+            num_targets = int(self.target_entry.get())
+        except ValueError:
+            num_sensors = 50
+            num_targets = 15
 
         for i in range(num_sensors):
             x = random.randint(0, self.width)
@@ -152,7 +165,7 @@ class SensorNetworkGUI:
     def creating_charts(self):
         plt.figure(figsize=(10, 5))
         plt.plot(self.simulation_data.time_steps, self.simulation_data.active_sensors, label='Active Sensors')
-        plt.xlabel('Time Steps')
+        plt.xlabel('Time Steps [min]')
         plt.ylabel('Number of Active Sensors')
         plt.title('Active Sensors Over Time')
         plt.legend()
@@ -160,7 +173,7 @@ class SensorNetworkGUI:
 
         plt.figure(figsize=(10, 5))
         plt.plot(self.simulation_data.time_steps, self.simulation_data.coverage, label='Coverage %', color='green')
-        plt.xlabel('Time Steps')
+        plt.xlabel('Time Steps [min]')
         plt.ylabel('Coverage Percentage')
         plt.title('Target Coverage Over Time')
         plt.legend()
@@ -172,7 +185,7 @@ class SensorNetworkGUI:
         self.simulation_data.coverage.append(best_coverage)
         simulation_results = self.simulate_sensor_lifetimes()
         self.time_lived += simulation_results
-        print(f'Total Time: {self.time_lived} seconds')
+        print(f'Total Time: {self.time_lived} min')
         for sensor in self.region.sensors:
             self.draw_sensor(sensor)
         self.creating_charts()

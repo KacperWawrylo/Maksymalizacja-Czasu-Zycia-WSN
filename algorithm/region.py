@@ -21,7 +21,7 @@ class Region:
         for sensor in self.sensors:
             if sensor.lifetime > 0:
                 sensor.is_active = False
-        all_targets = set(self.targets)  # Set of all targets to cover
+        all_targets = set(self.targets)
         covered_targets = set()
         active_sensors = []
 
@@ -30,7 +30,7 @@ class Region:
             best_cover_increment = 0
             best_new_cover = set()
 
-            # Find the sensor that covers the most uncovered targets
+
             for sensor in self.sensors:
                 if not sensor.is_active and sensor.lifetime > 0:
                     new_cover = {target for target in sensor.targets_in_range if target not in covered_targets}
@@ -40,9 +40,9 @@ class Region:
                         best_new_cover = new_cover
 
             if best_sensor is None:
-                break  # No more sensors can increase the coverage
+                break
 
-            # Activate the best sensor found and update coverage
+
             best_sensor.is_active = True
             active_sensors.append(best_sensor)
             covered_targets.update(best_new_cover)
